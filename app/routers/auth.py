@@ -56,7 +56,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    token = create_access_token({"sub": str(user.id)})
+    token = create_access_token({"sub": user.email})
     return TokenResponse(access_token=token)
 
 
@@ -106,5 +106,5 @@ async def google_callback(
         await db.commit()
         await db.refresh(user)
 
-    token = create_access_token({"sub": str(user.id)})
+    token = create_access_token({"sub": user.email})
     return RedirectResponse(f"{frontend_url}/auth/callback?token={token}")
