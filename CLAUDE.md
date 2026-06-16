@@ -58,7 +58,7 @@ backend/
 │   │   ├── database.py      # Async SQLAlchemy engine + session
 │   │   └── security.py      # JWT creation, hashing, get_current_user
 │   ├── routers/
-│   │   ├── auth.py          # register, login
+│   │   ├── auth.py          # register, login, Google OAuth login/callback
 │   │   ├── projects.py      # CRUD for projects
 │   │   ├── signals.py       # Upload/paste signal, chunking
 │   │   ├── pipeline.py      # Trigger pipeline, poll status
@@ -77,7 +77,8 @@ backend/
 │   └── services/
 │       ├── llm.py           # Groq LLM calls
 │       ├── embeddings.py    # Embedding generation
-│       └── pdf.py           # PDF text extraction
+│       ├── pdf.py           # PDF text extraction
+│       └── google_oauth.py  # Google OAuth token exchange + userinfo
 └── tests/
     ├── test_auth.py
     ├── test_pipeline/       # Each node tested with mocked LLM responses
@@ -95,6 +96,9 @@ backend/
 - Neon Postgres connection via `DATABASE_URL` in `.env` (pgvector enabled in Neon dashboard)
 - Alembic configured for async SQLAlchemy
 - JWT auth: register/login, password hashing, `get_current_user` dependency
+- Google OAuth: `/auth/google/login` redirects to Google, `/auth/google/callback`
+  exchanges the code, finds-or-creates the user, then redirects to `FRONTEND_URL`
+  with the app's own JWT
 
 ### Phase 1 — Ingestion
 - ORM models: `projects`, `signals`, `signal_chunks` (pgvector column)
@@ -150,3 +154,6 @@ Required variables in `.env` (never commit this file):
 | `GROQ_API_KEY`   | Groq API key for llama-3.3-70b calls              |
 | `JWT_SECRET_KEY` | Secret used to sign/verify JWT tokens             |
 | `VOYAGE_API_KEY` | Voyage AI API key for `voyage-3` embeddings       |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client ID                            |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret                        |
+| `FRONTEND_URL`         | Frontend origin the Google OAuth callback redirects to |

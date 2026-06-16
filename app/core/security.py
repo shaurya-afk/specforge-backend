@@ -31,6 +31,24 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
+def create_oauth_state_token() -> str:
+    settings = get_settings()
+    payload = {
+        "purpose": "google_oauth_state",
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+    }
+    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+
+
+def verify_oauth_state_token(token: str) -> bool:
+    settings = get_settings()
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    except JWTError:
+        return False
+    return payload.get("purpose") == "google_oauth_state"
+
+
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
     db: AsyncSession = Depends(get_db),
